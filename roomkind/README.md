@@ -1,3 +1,13 @@
 # Roomkind
+Room QR cards, guest tips, and housekeeping department reports for a single hotel. USD. Room numbers can include a trailing letter. The hotel can cross-reference the room and tip time with its housekeeping roster. The application does not issue payroll payouts.
 
-The housekeeping tipping application is maintained on the [roomkind-housekeeping branch](https://github.com/SidharthAnand04/SidharthAnand04/tree/roomkind-housekeeping/roomkind).
+## Run and verify
+Node 24 or newer. Run `npm test` for SQLite-backed HTTP route tests and the build. The Worker entrypoint is dist/server/index.js. Bind a D1 database as DB and apply drizzle/0000_tips.sql before serving. The build bundles the QR encoder locally.
+
+## Hotel operations
+Use /cards to enter the room list and print the cards. Every QR code points to the matching /r/ROOM on the current domain. Public receipt URLs use random bearer identifiers. The public API never serves department reports.
+
+The default mode records simulated tips. For a single hotel approved for Plaid Transfer, configure PLAID_ENV (sandbox or production), PLAID_CLIENT_ID, PLAID_SECRET, PLAID_FUNDING_ACCOUNT_ID (the hotel's verified account), and PLAID_LINK_CUSTOMIZATION (single-account selection). Plaid Link handles bank credentials and authorization. Validate authorization, settlement, returns and retries with the hotel's sandbox before production. A receipt refresh retrieves current status from Plaid. Sandbox and demo totals are isolated by mode. Money received by the hotel still requires allocation to staff.
+
+## Fortnight close
+The linked reporting task runs every second Monday. Periods run from Monday 00:00 UTC to Monday 00:00 UTC 14 days later, anchored on November 16, 2026. Before snapshotting, reconcile bank entries for the closed period through their receipt endpoints. POST /api/reports/close computes the latest closed period and atomically upserts one row per period, including empty periods. Its response exposes only dates. The configured REPORT_OWNER_EMAIL can sign in at /reports for the current totals, report archive and CSV export. The linked task can read the reports table through authenticated Sites database tools. Reports are as-of snapshots of tips initiated in that period. Later returns require a separate payroll adjustment. The task provides the summary privately to the owner.

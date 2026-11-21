@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" role="img" aria-labelledby="title desc">
+<title id="title">Fresh towels and a brass hotel key</title><desc id="desc">An apricot, cream and pine-green still life of two folded towels, a sprig of leaves and a vintage room key.</desc>
+<defs>
+<pattern id="weave" width="7" height="7" patternUnits="userSpaceOnUse"><path d="M0 1h3m1 3h2" stroke="#947f58" stroke-width=".75" opacity=".35"/></pattern>
+<pattern id="paper" width="5" height="6" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".55" fill="#7c4f37" opacity=".15"/><circle cx="3.5" cy="4" r=".45" fill="#fff5d6" opacity=".7"/></pattern>
+</defs>
+<path fill="#f4bf91" d="M0 0h640v400H0z"/>
+<path d="M0 310 640 90v310H0z" fill="#e9ab7d"/>
+<path d="M18 270 640 55m-562 228L640 88" fill="none" stroke="#f5d1a9" stroke-width="2" opacity=".75"/>
+<path fill="#8c6048" opacity=".18" d="m77 292 145 57 291-73-162-69z"/>
+<g stroke="#425143" stroke-width="2.4" stroke-linejoin="round">
+<path d="m89 236 276-71 137 55q13 6 11 22l-3 18q-2 9-14 12l-266 68q-9 2-16-1l-123-50q-13-6-12-23 0-20 10-30z" fill="#e1dfc6"/>
+<path d="m89 236 132 53 283-70-139-56z" fill="#fff6df"/>
+<path d="m221 289 280-69q13 0 12 19l-2 18q0 12-14 15l-267 68q-19 3-19-22-1-23 10-29z" fill="#c2ccb3"/>
+<path d="m232 299 260-65q10-1 9 11 0 12-10 14l-258 65q-9 1-8-9 0-7 8-9l251-63" fill="none" stroke="#68785e" stroke-width="2.1"/>
+<path d="m105 245 1 44 9 4v-45m9 3v47l5 2v-47" fill="#407166" stroke="none"/>
+<path d="m110 241 268-70m-253 76 267-70" fill="none" stroke="#42776a" stroke-width="4"/>
+<path d="m119 190 239-59 126 47q13 5 11 19l-3 16q-2 9-13 12l-234 60q-8 2-16-1l-111-45q-13-4-13-19 0-21 14-30z" fill="#f2e7ca"/>
+<path d="m119 190 119 46 248-59-125-49z" fill="#fff8e4"/>
+<path d="m238 236 245-59q14-1 13 17l-3 17q0 12-15 15l-230 59q-19 4-19-19-1-20 9-30z" fill="#dedec4"/>
+<path d="m250 246 226-56q9-1 8 9 0 10-9 13l-224 56q-9 1-9-7 0-7 8-9l218-55" fill="none" stroke="#7e826a" stroke-width="2.1"/>
+<path d="m143 200 2 47 8 3-1-47m8 3 1 47 4 2-1-47" fill="#497969" stroke="none"/>
+<path d="m144 198 237-61m-222 66 238-60" fill="none" stroke="#497969" stroke-width="4"/>
+<path d="m121 191 116 44 243-58-122-47z" fill="url(#weave)" stroke="none"/>
+</g>
+<g fill="#31594b" stroke="#31594b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+<path d="M298 194q21-43 75-83" fill="none"/>
+<path d="M319 162q-22-14-19-35 22 11 19 35zm15-16q-4-21 9-38 9 23-9 38zm11-11q16-22 39-23-14 18-39 23zm-22 24q21-16 42-14-16 16-42 14zm-13 17q18-11 33-7-13 12-33 7z"/>
+</g>
+<g transform="translate(431 303) rotate(-17)" stroke="#454a3b" stroke-width="2.4" stroke-linejoin="round">
+<path d="m0-1 44-25 31 27-44 27q-4 3-7 0L0 6q-4-5 0-7z" fill="#346156"/>
+<path d="m7 2 36-21 24 20-37 23z" fill="none" stroke="#dbca95" stroke-width="1.4"/>
+<circle cx="54" cy="2" r="3" fill="#e9bb76"/><ellipse cx="66" cy="1" rx="12" ry="8" fill="none" stroke="#ad813a" stroke-width="3"/>
+<path d="m75 5 38 22 9-3-4-4-4 1-2-5-5 1-23-15a11 11 0 1 0-9 3zm1-8a4 4 0 1 1 0-8 4 4 0 0 1 0 8z" fill="#d6aa58" fill-rule="evenodd"/>
+</g>
+<path fill="url(#paper)" d="M0 0h640v400H0z"/>
+</svg>

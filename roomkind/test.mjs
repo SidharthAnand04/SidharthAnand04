@@ -1,0 +1,25 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {DatabaseSync} from 'node:sqlite';
+import {readFileSync} from 'node:fs';
+import worker from './dist/server/index.js';
+test('room checkout, isolation, retries, room cards and closed report',async()=>{
+ const db=new DatabaseSync(':memory:');db.exec(readFileSync('drizzle/0000_tips.sql','utf8'));
+ const DB={prepare(sql){return {bind(...params){const st=db.prepare(sql);return {run:()=>st.run(...params),first:()=>st.get(...params)}}}}};
+ const call=(p,opt)=>worker.fetch(new Request('https://hotel.test'+p,opt),{DB});
+ const id=crypto.randomUUID(),body={id,room:'101',cents:500};
+ const post=b=>call('/api/tip',{method:'POST',headers:{origin:'https://hotel.test'},body:JSON.stringify(b)});
+ assert.match(await (await call('/r/101')).text(),/Room 101/);
+ assert.match(await (await call('/qr/101')).text(),/shape-rendering/);
+ assert.equal((await call('/cards?rooms=101,202A')).status,200);
+ assert.equal((await call('/r/x')).status,404);
+ assert.equal((await post(body)).status,200);assert.equal((await post(body)).status,200);
+ assert.equal((await post({...body,cents:600})).status,409);
+ assert.equal((await post({...body,id:crypto.randomUUID(),cents:-3})).status,400);
+ assert.match(await (await call('/receipt/'+id)).text(),/Test tip recorded/);
+ const end=Date.UTC(2026,10,16)+Math.floor((Date.now()-Date.UTC(2026,10,16))/(14*86400000))*14*86400000;
+ db.prepare('UPDATE tips SET created=?').run(end-1);
+ for(let i=0;i<2;i++)assert.equal((await call('/api/reports/close',{method:'POST'})).status,200);
+ const reports=db.prepare('SELECT * FROM reports').all();assert.equal(reports.length,1);
+ assert.deepEqual(JSON.parse(reports[0].summary_json),[{room:'101',mode:'demo',status:'simulated',tips:1,cents:500}]);
+});
