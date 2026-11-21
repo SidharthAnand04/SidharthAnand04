@@ -36,14 +36,14 @@ async function checkout(req,e){
   if(!b||!uuid(b.id)||!validRoom(b.room)||!Number.isInteger(b.cents)||b.cents<100||b.cents>50000)return json({error:'Choose a tip between $1 and $500.'},400);
   const mode=getMode(e);
   if(mode!=='demo'&&(typeof b.name!=='string'||!b.name.trim()||b.name.length>120))return json({error:'Enter your account name.'},400);
-  await e.DB.prepare('INSERT OR IGNORE INTO tips(id,room,cents,mode,created,status) VALUES(?,?,?,?,?,?)').bind(b.id,b.room,b.cents,mode,Date.now(),mode==='demo'?'simulated':'initiated').run();
-  let row=await e.DB.prepare('SELECT * FROM tips WHERE id=?').bind(b.id).first();
+  await e.DB.prepare(statements.addTip).bind(b.id,b.room,b.cents,mode,Date.now(),mode==='demo'?'simulated':'initiated').run();
+  let row=await e.DB.prepare(statements.tip).bind(b.id).first();
   if(row.room!==b.room||row.cents!==b.cents||row.mode!==mode)return json({error:'Receipt details differ.'},409);
   if(mode==='demo')return json({recorded:true});
   if(!row.intent){
     const info=await plaid(e,'/transfer/intent/create',{mode:'PAYMENT',amount:(b.cents/100).toFixed(2),description:'Room tip',ach_class:'web',funding_account_id:e.PLAID_FUNDING_ACCOUNT_ID,user:{legal_name:b.name.trim()}});
-    await e.DB.prepare('UPDATE tips SET intent=? WHERE id=? AND intent IS NULL').bind(info.transfer_intent.id,b.id).run();
-    row=await e.DB.prepare('SELECT * FROM tips WHERE id=?').bind(b.id).first();
+    await e.DB.prepare(statements.attachIntent).bind(info.transfer_intent.id,b.id).run();
+    row=await e.DB.prepare(statements.tip).bind(b.id).first();
   }
   if((await refresh(e,row))!=='initiated')return json({recorded:true});
   const link=await plaid(e,'/link/token/create',{client_name:'Roomkind',user:{client_user_id:b.id},products:['transfer'],language:'en',country_codes:['US'],link_customization_name:e.PLAID_LINK_CUSTOMIZATION,transfer:{intent_id:row.intent}});
@@ -56,12 +56,14 @@ async function refresh(e,row){
   if(t.transfer_id)status=(await plaid(e,'/transfer/get',{transfer_id:t.transfer_id})).transfer.status;
   const allowed=['initiated','pending','posted','settled','funds_available','returned','failed','cancelled'];
   if(!allowed.includes(status))status='under_review';
-  await e.DB.prepare('UPDATE tips SET status=? WHERE id=?').bind(status,row.id).run();
+  await e.DB.prepare(statements.setStatus).bind(status,row.id).run();
   return status;
 }
+export {closePeriod,refresh};
 export default {async fetch(req,e){
   const u=new URL(req.url),p=u.pathname;
   try{
+    if(req.method==='POST'&&p==='/internal/ledger'&&!e.VERCEL_APP)return await ledgerRequest(req,e);
     if(req.method==='POST'&&p==='/api/reports/close')return json(await closePeriod(e.DB));
     if(req.method==='POST'&&p==='/api/tip')return await checkout(req,e);
     if(req.method!=='GET')return json({error:'Unsupported method.'},405);
@@ -77,7 +79,7 @@ export default {async fetch(req,e){
       if(p==='/qr/'+room)return qr(u.origin+'/r/'+room);
     }
     if(p.startsWith('/receipt/')&&uuid(p.slice(9))){
-      const row=await e.DB.prepare('SELECT * FROM tips WHERE id=?').bind(p.slice(9)).first();
+      const row=await e.DB.prepare(statements.tip).bind(p.slice(9)).first();
       if(row){const status=await refresh(e,row);return page(art+'<section><span class="tag">Room '+row.room+'</span><h1>'+(row.mode==='demo'?'Test tip recorded.':'Tip status')+'</h1><p>'+dollars(row.cents)+' · '+(row.mode==='demo'?'Simulated tip. No money moved.':row.mode+' transfer · '+status)+'</p><p class="note">Receipt '+row.id.slice(0,8).toUpperCase()+'</p><a href="/">Back to guest services</a></section>')}
     }
     return page('<section><h1>Page unavailable</h1><a href="/">Guest services</a></section>',404);

@@ -1,0 +1,7 @@
+{
+ "framework":null,
+ "buildCommand":"node build.mjs",
+ "outputDirectory":"public",
+ "rewrites":[{"source":"/:route*","destination":"/api/app?_route=/:route*"}],
+ "crons":[{"path":"/cron/housekeeping","schedule":"0 13 * * 1"}]
+}

@@ -3,12 +3,7 @@ async function closePeriod(db, now=Date.now()){
   const length=14*86400000,anchor=Date.UTC(2026,10,16);
   const end=anchor+Math.floor((now-anchor)/length)*length,start=end-length;
   const day=t=>new Date(t).toISOString().slice(0,10);
-  await db.prepare(`INSERT INTO reports(period_start,period_end_exclusive,generated_at,summary_json)
-    SELECT ?,?,?,COALESCE(json_group_array(json_object('room',room,'mode',mode,'status',status,'tips',n,'cents',total)),'[]')
-    FROM (SELECT room,mode,status,count(*) n,sum(cents) total FROM tips
-          WHERE created>=? AND created<? GROUP BY room,mode,status ORDER BY room,mode,status)
-    WHERE true ON CONFLICT(period_start) DO UPDATE SET generated_at=excluded.generated_at,summary_json=excluded.summary_json
-    WHERE reports.summary_json<>excluded.summary_json`)
+  await db.prepare(statements.closePeriod)
     .bind(day(start),day(end),now,start,end).run();
   return {start:day(start),end:day(end)};
 }
@@ -17,8 +12,8 @@ async function staff(req,e){
   if(!email)return page('<section><h1>Housekeeping reports</h1><p>Sign in with the hotel owner account to see tip totals.</p><a target="_top" href="/signin-with-chatgpt?return_to=%2Freports">Sign in</a></section>',401);
   if(!e.REPORT_OWNER_EMAIL||email.toLowerCase()!==e.REPORT_OWNER_EMAIL.toLowerCase())return page('<section><h2>Owner access required</h2></section>',403);
   const {end}=await closePeriod(e.DB);
-  const open=await e.DB.prepare('SELECT room,mode,status,count(*) tips,sum(cents) cents FROM tips WHERE created>=? GROUP BY room,mode,status ORDER BY room').bind(Date.parse(end)).all();
-  const history=await e.DB.prepare('SELECT * FROM reports ORDER BY period_start DESC').all();
+  const open=await e.DB.prepare(statements.openRows).bind(Date.parse(end)).all();
+  const history=await e.DB.prepare(statements.reports).all();
   const periods=[{label:'Open period from '+end,rows:open.results},...history.results.map(r=>({label:r.period_start+' to '+new Date(Date.parse(r.period_end_exclusive)-1).toISOString().slice(0,10),rows:JSON.parse(r.summary_json)}))];
   if(new URL(req.url).pathname.endsWith('.csv')){
     const lines=['period,room,mode,status,count,amount_usd'];
